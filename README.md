@@ -21,9 +21,10 @@ Frontend del chat en tiempo real construido con Angular, SockJS y STOMP.
 
 - [x] Conexión al servidor WebSocket
 - [x] Envío y recepción de mensajes en tiempo real
-- [ ] Notificación cuando un usuario se une o se va
-- [ ] Indicador de "está escribiendo"
-- [ ] Historial de mensajes
+- [x] Notificación cuando un usuario se une o se va
+- [x] Indicador de "está escribiendo"
+- [x] Colores por usuario
+- [ ] Historial de mensajes al conectar
 - [ ] Estilos finales
 
 ## Cómo ejecutar
