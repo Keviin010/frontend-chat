@@ -1,0 +1,24 @@
+<div class="chat-container">
+  <div *ngIf="!connected" class="login">
+    <h2>Ingresa tu nombre</h2>
+    <input [(ngModel)]="username" placeholder="Tu nombre" />
+    <button (click)="connect()">Entrar al chat</button>
+  </div>
+
+  <div *ngIf="connected" class="chat-box">
+    <div class="messages">
+      <div *ngFor="let msg of messages" class="message" [ngClass]="msg.type.toLowerCase()">
+        <span *ngIf="msg.type === 'CHAT'">
+          <strong [style.color]="getColor(msg.sender)">{{ msg.sender }}:</strong> {{ msg.content }}
+        </span>
+        <span *ngIf="msg.type === 'JOIN'" class="event">{{ msg.sender }} se unió al chat</span>
+        <span *ngIf="msg.type === 'LEAVE'" class="event">{{ msg.sender }} salió del chat</span>
+      </div>
+    </div>
+    <div class="typing" *ngIf="typingUser">{{ typingUser }} está escribiendo...</div>
+    <div class="input-area">
+      <input [(ngModel)]="messageContent" (input)="onTypingEvent()" placeholder="Escribe un mensaje..." (keyup.enter)="sendMessage()" />
+      <button (click)="sendMessage()">Enviar</button>
+    </div>
+  </div>
+</div>
