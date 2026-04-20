@@ -1,59 +1,50 @@
-# FrontendChat
+# frontend-chat
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.3.
+> **En construcción** — proyecto en desarrollo activo.
 
-## Development server
+Frontend del chat en tiempo real construido con Angular, SockJS y STOMP.
 
-To start a local development server, run:
+![Angular](https://img.shields.io/badge/Angular-21-DD0031?style=flat&logo=angular&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)
+![SockJS](https://img.shields.io/badge/SockJS-1.6-000000?style=flat&logo=socketdotio&logoColor=white)
+![StompJS](https://img.shields.io/badge/StompJS-2.3-000000?style=flat&logo=socketdotio&logoColor=white)
+![Node](https://img.shields.io/badge/Node.js-24-339933?style=flat&logo=nodedotjs&logoColor=white)
+
+## Tecnologías
+
+- Angular 21
+- TypeScript
+- SockJS
+- StompJS
+
+## Repositorio backend
+
+[backend-chat](https://github.com/Keviin010/backend-chat) — Spring Boot + WebSocket + STOMP + MySQL
+
+## Funcionalidades
+
+- [x] Conexión al servidor WebSocket
+- [x] Envío y recepción de mensajes en tiempo real
+- [x] Notificación cuando un usuario se une o se va
+- [x] Indicador de "está escribiendo"
+- [x] Colores únicos por usuario
+
+## Cómo ejecutar
+
+1. Instalar dependencias:
+
+```bash
+npm install
+```
+
+2. Ejecutar la aplicación:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+La app levanta en `http://localhost:4200`. Requiere el backend corriendo en `http://localhost:8080`.
 
-## Code scaffolding
+## Estado
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Proyecto en construcción — se irán agregando funcionalidades progresivamente.
