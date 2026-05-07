@@ -1,6 +1,6 @@
 # frontend-chat
 
-> **En construcción** — proyecto en desarrollo activo.
+> **En construcción** —  proyecto en desarrollo activo.
 
 Frontend del chat en tiempo real construido con Angular, SockJS y STOMP.
 
