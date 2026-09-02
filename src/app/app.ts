@@ -9,3 +9,5 @@ import { ChatComponent } from './components/chat/chat';
   styleUrls: ['./app.css']
 })
 export class AppComponent {}
+
+// vercel trigger
