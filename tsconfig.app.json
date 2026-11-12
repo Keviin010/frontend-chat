@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "rootDir": "./src",
-    "types": ["stompjs", "sockjs-client"]
+    "types": ["sockjs-client"]
   },
   "include": [
     "src/**/*.ts"

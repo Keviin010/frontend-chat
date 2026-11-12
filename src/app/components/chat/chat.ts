@@ -1,79 +1,160 @@
-import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, ElementRef, OnDestroy, afterRenderEffect, inject, signal, viewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '../../services/chat.service';
 import { ChatMessage } from '../../models/chat-message.model';
 
+type Estado = 'inicio' | 'conectando' | 'conectado' | 'caido' | 'error';
+
 @Component({
   selector: 'app-chat',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule, DatePipe],
   templateUrl: './chat.html',
-  styleUrls: ['./chat.css']
+  styleUrl: './chat.css'
 })
 export class ChatComponent implements OnDestroy {
 
-  username: string = '';
-  messageContent: string = '';
-  messages: ChatMessage[] = [];
-  connected: boolean = false;
-  typingUser: string = '';
-  typingTimeout: any;
+  private chatService = inject(ChatService);
 
-  userColors: Map<string, string> = new Map();
-  colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#e91e63'];
+  username = '';
+  texto = '';
 
-  constructor(private chatService: ChatService, private cdr: ChangeDetectorRef) {}
+  estado = signal<Estado>('inicio');
+  messages = signal<ChatMessage[]>([]);
+  typingUser = signal('');
 
-  getColor(sender: string): string {
-    if (!this.userColors.has(sender)) {
-      const color = this.colors[this.userColors.size % this.colors.length];
-      this.userColors.set(sender, color);
-    }
-    return this.userColors.get(sender)!;
+  lista = viewChild<ElementRef<HTMLDivElement>>('lista');
+
+  private colores = ['#e74c3c', '#2980b9', '#27ae60', '#d35400', '#8e44ad', '#16a085', '#c0392b', '#e91e63'];
+  private intentos = 0;
+  private saliendo = false;
+  private ultimoAviso = 0;
+  private temporizadorEscribiendo: number | undefined;
+
+  constructor() {
+    afterRenderEffect(() => {
+      this.messages();
+      const caja = this.lista()?.nativeElement;
+      if (caja) {
+        caja.scrollTop = caja.scrollHeight;
+      }
+    });
   }
 
-  connect(): void {
-    if (!this.username.trim()) return;
+  entrar(): void {
+    const nombre = this.username.trim();
+    if (!nombre) {
+      return;
+    }
+    this.username = nombre;
+    this.saliendo = false;
+    this.intentos = 0;
+    this.messages.set([]);
+    this.estado.set('conectando');
+    this.conectar();
+  }
+
+  reintentar(): void {
+    this.intentos = 0;
+    this.estado.set('conectando');
+    this.conectar();
+  }
+
+  salir(): void {
+    this.saliendo = true;
+    this.chatService.disconnect();
+    this.messages.set([]);
+    this.typingUser.set('');
+    this.estado.set('inicio');
+  }
+
+  enviar(): void {
+    const contenido = this.texto.trim();
+    if (!contenido || this.estado() !== 'conectado') {
+      return;
+    }
+    this.chatService.sendMessage({ sender: this.username, content: contenido, type: 'CHAT' });
+    this.texto = '';
+  }
+
+  avisarEscribiendo(): void {
+    const ahora = Date.now();
+    if (this.estado() !== 'conectado' || ahora - this.ultimoAviso < 1500) {
+      return;
+    }
+    this.ultimoAviso = ahora;
+    this.chatService.sendTyping({ sender: this.username, content: '', type: 'TYPING' });
+  }
+
+  colorDe(nombre: string): string {
+    let suma = 0;
+    for (const letra of nombre) {
+      suma += letra.charCodeAt(0);
+    }
+    return this.colores[suma % this.colores.length];
+  }
+
+  private conectar(): void {
     this.chatService.connect(
       this.username,
-      (msg) => this.onMessage(msg),
-      (msg) => this.onTyping(msg)
+      (msg) => this.recibir(msg),
+      (msg) => this.alguienEscribe(msg),
+      () => this.alConectar(),
+      () => this.alFallar()
     );
-    this.connected = true;
   }
 
-  onMessage(msg: ChatMessage): void {
-    this.messages.push(msg);
-    this.typingUser = '';
-    this.cdr.detectChanges();
+  private alConectar(): void {
+    this.intentos = 0;
+    this.estado.set('conectado');
+    this.cargarHistorial();
   }
 
-  onTyping(msg: ChatMessage): void {
-    if (msg.sender !== this.username) {
-      this.typingUser = msg.sender;
-      clearTimeout(this.typingTimeout);
-      this.typingTimeout = setTimeout(() => {
-        this.typingUser = '';
-        this.cdr.detectChanges();
-      }, 2000);
-      this.cdr.detectChanges();
+  private alFallar(): void {
+    if (this.saliendo || this.estado() === 'error') {
+      return;
+    }
+    this.intentos++;
+    if (this.intentos >= 20) {
+      this.chatService.disconnect();
+      this.estado.set('error');
+      return;
+    }
+    if (this.estado() === 'conectado') {
+      this.estado.set('caido');
     }
   }
 
-  sendMessage(): void {
-    if (!this.messageContent.trim()) return;
-    const msg: ChatMessage = { sender: this.username, content: this.messageContent, type: 'CHAT' };
-    this.chatService.sendMessage(msg);
-    this.messageContent = '';
+  private async cargarHistorial(): Promise<void> {
+    try {
+      const historial = await this.chatService.getHistory();
+      const ids = new Set(historial.map((msg) => msg.id));
+      const nuevos = this.messages().filter((msg) => msg.id === undefined || !ids.has(msg.id));
+      this.messages.set([...historial, ...nuevos]);
+    } catch (error) {
+      console.warn('No se pudo cargar el historial');
+    }
   }
 
-  onTypingEvent(): void {
-    const msg: ChatMessage = { sender: this.username, content: '', type: 'TYPING' };
-    this.chatService.sendTyping(msg);
+  private recibir(msg: ChatMessage): void {
+    this.messages.update((lista) => [...lista, msg].slice(-200));
+    if (msg.sender === this.typingUser()) {
+      this.typingUser.set('');
+    }
+  }
+
+  private alguienEscribe(msg: ChatMessage): void {
+    if (msg.sender === this.username) {
+      return;
+    }
+    this.typingUser.set(msg.sender);
+    window.clearTimeout(this.temporizadorEscribiendo);
+    this.temporizadorEscribiendo = window.setTimeout(() => this.typingUser.set(''), 3000);
   }
 
   ngOnDestroy(): void {
+    this.saliendo = true;
+    window.clearTimeout(this.temporizadorEscribiendo);
     this.chatService.disconnect();
   }
 }

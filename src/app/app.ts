@@ -3,11 +3,8 @@ import { ChatComponent } from './components/chat/chat';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
   imports: [ChatComponent],
   templateUrl: './app.html',
-  styleUrls: ['./app.css']
+  styleUrl: './app.css'
 })
 export class AppComponent {}
-
-// vercel trigger

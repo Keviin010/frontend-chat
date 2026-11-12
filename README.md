@@ -1,56 +1,60 @@
 # frontend-chat
 
-> **En construcción** —  proyecto en desarrollo activo.
-
-Frontend del chat en tiempo real construido con Angular, SockJS y STOMP.
+Interfaz de un chat en tiempo real hecha con Angular 21, SockJS y @stomp/stompjs.
 
 ![Angular](https://img.shields.io/badge/Angular-21-DD0031?style=flat&logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)
 ![SockJS](https://img.shields.io/badge/SockJS-1.6-000000?style=flat&logo=socketdotio&logoColor=white)
-![StompJS](https://img.shields.io/badge/StompJS-2.3-000000?style=flat&logo=socketdotio&logoColor=white)
-![Node](https://img.shields.io/badge/Node.js-24-339933?style=flat&logo=nodedotjs&logoColor=white)
+![StompJS](https://img.shields.io/badge/StompJS-7-000000?style=flat&logo=socketdotio&logoColor=white)
+
+Backend: [backend-chat](https://github.com/Keviin010/backend-chat) (Spring Boot, WebSocket, STOMP y PostgreSQL).
+
+## Qué hace
+
+- Pide un nombre y entra a una sala compartida con todos los usuarios.
+- Envía y recibe mensajes en tiempo real.
+- Muestra el historial de los últimos 50 mensajes al entrar.
+- Avisa cuando alguien entra, se va o está escribiendo.
+- Muestra la hora de cada mensaje y un color distinto por usuario.
+- Baja sola hasta el último mensaje.
+- Si el servidor está dormido o se cae, lo indica y reintenta la conexión cada 4 segundos. Si no logra conectar tras 20 intentos, ofrece un botón para reintentar.
 
 ## Tecnologías
 
-- Angular 21
-- TypeScript
-- SockJS
-- StompJS
+Angular 21 con signals, TypeScript, SockJS, @stomp/stompjs y Vitest.
 
-## Repositorio backend
+## Cómo ejecutarlo en tu computador
 
-[backend-chat](https://github.com/Keviin010/backend-chat) — Spring Boot + WebSocket + STOMP + PostgreSQL
-
-## Funcionalidades
-
-- [x] Conexión al servidor WebSocket
-- [x] Envío y recepción de mensajes en tiempo real
-- [x] Notificación cuando un usuario se une o se va
-- [x] Indicador de "está escribiendo"
-- [x] Colores únicos por usuario
-
-## Cómo ejecutar
-
-1. Instalar dependencias:
+1. Instala las dependencias:
 
 ```bash
 npm install
 ```
 
-2. Ejecutar la aplicación:
+2. Ejecuta la aplicación:
 
 ```bash
-ng serve
+npm start
 ```
 
-La app levanta en `http://localhost:4200`. Requiere el backend corriendo en `http://localhost:8080`.
+La aplicación queda en `http://localhost:4200` y se conecta al backend en `http://localhost:8080`.
+
+3. Pruebas:
+
+```bash
+npm test
+```
+
+## Dirección del backend
+
+La dirección del servidor está en `src/app/config.ts`. En `localhost` usa `http://localhost:8080`. En cualquier otra dirección usa la del servicio en Render. Si cambias el servicio del backend, cambia esa dirección y vuelve a desplegar.
 
 ## Despliegue en Vercel
 
-1. Antes de subir, en `src/app/services/chat.service.ts` reemplazar `TU-BACKEND.onrender.com` por la URL real del backend ya desplegado en Render.
-2. Importar el repo en Vercel — detecta Angular automáticamente.
-3. Deploy. En Settings → Domains se puede elegir un nombre de subdominio más limpio.
+1. Importa este repositorio en Vercel. Detecta Angular solo.
+2. Pulsa Deploy.
+3. Si el backend no acepta tu dirección, agrégala en la variable `FRONTEND_URL` del backend. Por defecto acepta cualquier dirección `*.vercel.app`.
 
-## Estado
+## Autor
 
-Proyecto en construcción — se irán agregando funcionalidades progresivamente.
+Kevin Dair Royo Cuesta, estudiante de Tecnología en Desarrollo de Software, Universidad Católica Luis Amigó.

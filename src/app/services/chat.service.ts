@@ -1,11 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Client, over } from 'stompjs';
+import { Client, IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { BACKEND_URL } from '../config';
 import { ChatMessage } from '../models/chat-message.model';
-
-const BACKEND_URL = window.location.hostname === 'localhost'
-  ? 'http://localhost:8080'
-  : 'https://TU-BACKEND.onrender.com'; // reemplazar por la URL real una vez desplegado en Render
 
 @Injectable({
   providedIn: 'root'
@@ -14,34 +11,55 @@ export class ChatService {
 
   private stompClient: Client | null = null;
 
-  connect(username: string, onMessage: (msg: ChatMessage) => void, onTyping: (msg: ChatMessage) => void): void {
-    const socket = new SockJS(`${BACKEND_URL}/chat-websocket`);
-    this.stompClient = over(socket);
-    this.stompClient.debug = () => {};
+  async getHistory(): Promise<ChatMessage[]> {
+    const response = await fetch(`${BACKEND_URL}/api/messages`);
+    if (!response.ok) {
+      throw new Error('No se pudo leer el historial');
+    }
+    return response.json();
+  }
 
-    this.stompClient.connect({}, () => {
-      const joinMessage: ChatMessage = { sender: username, content: '', type: 'JOIN' };
-      this.stompClient!.send('/app/sendMessage', {}, JSON.stringify(joinMessage));
+  connect(
+    username: string,
+    onMessage: (msg: ChatMessage) => void,
+    onTyping: (msg: ChatMessage) => void,
+    onConnected: () => void,
+    onError: () => void
+  ): void {
+    this.disconnect();
 
-      this.stompClient!.subscribe('/topic/chat', (payload: any) => {
-        onMessage(JSON.parse(payload.body));
-      });
-
-      this.stompClient!.subscribe('/topic/typing', (payload: any) => {
-        onTyping(JSON.parse(payload.body));
-      });
+    const client = new Client({
+      webSocketFactory: () => new SockJS(`${BACKEND_URL}/chat-websocket`),
+      reconnectDelay: 4000,
+      onConnect: () => {
+        client.subscribe('/topic/chat', (payload: IMessage) => onMessage(JSON.parse(payload.body)));
+        client.subscribe('/topic/typing', (payload: IMessage) => onTyping(JSON.parse(payload.body)));
+        this.send('/app/sendMessage', { sender: username, content: '', type: 'JOIN' });
+        onConnected();
+      },
+      onWebSocketClose: () => onError()
     });
+
+    this.stompClient = client;
+    client.activate();
   }
 
   sendMessage(message: ChatMessage): void {
-    this.stompClient?.send('/app/sendMessage', {}, JSON.stringify(message));
+    this.send('/app/sendMessage', message);
   }
 
   sendTyping(message: ChatMessage): void {
-    this.stompClient?.send('/app/typing', {}, JSON.stringify(message));
+    this.send('/app/typing', message);
   }
 
   disconnect(): void {
-    this.stompClient?.disconnect(() => {});
+    this.stompClient?.deactivate();
+    this.stompClient = null;
+  }
+
+  private send(destination: string, message: ChatMessage): void {
+    if (this.stompClient?.connected) {
+      this.stompClient.publish({ destination, body: JSON.stringify(message) });
+    }
   }
 }
