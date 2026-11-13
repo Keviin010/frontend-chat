@@ -2,6 +2,10 @@
 
 Interfaz de un chat en tiempo real hecha con Angular 21, SockJS y @stomp/stompjs.
 
+**Demo en línea:** https://frontend-chat-3rd4.vercel.app/
+
+El demo corre en planes gratuitos. Si nadie lo visitó en los últimos 15 minutos, el servidor tarda cerca de un minuto en despertar y la pantalla muestra "Conectando" hasta que lo logra.
+
 ![Angular](https://img.shields.io/badge/Angular-21-DD0031?style=flat&logo=angular&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat&logo=typescript&logoColor=white)
 ![SockJS](https://img.shields.io/badge/SockJS-1.6-000000?style=flat&logo=socketdotio&logoColor=white)
@@ -49,9 +53,19 @@ npm test
 
 La dirección del servidor está en `src/app/config.ts`. En `localhost` usa `http://localhost:8080`. En cualquier otra dirección usa la del servicio en Render. Si cambias el servicio del backend, cambia esa dirección y vuelve a desplegar.
 
-## Despliegue en Vercel
+## Despliegue
 
-1. Importa este repositorio en Vercel. Detecta Angular solo.
+El demo en línea usa tres servicios gratuitos:
+
+| Parte | Servicio |
+| --- | --- |
+| Frontend | Vercel |
+| Backend | Render, construido con el `Dockerfile` del repositorio backend-chat |
+| Base de datos | Neon (PostgreSQL) |
+
+Para publicar el frontend en Vercel:
+
+1. Importa este repositorio en Vercel. Detecta Angular solo y deja el Root Directory en `./`.
 2. Pulsa Deploy.
 3. Si el backend no acepta tu dirección, agrégala en la variable `FRONTEND_URL` del backend. Por defecto acepta cualquier dirección `*.vercel.app`.
 
