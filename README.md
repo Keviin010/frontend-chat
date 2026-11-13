@@ -71,4 +71,4 @@ Para publicar el frontend en Vercel:
 
 ## Autor
 
-Kevin Dair Royo Cuesta, estudiante de Tecnología en Desarrollo de Software, Universidad Católica Luis Amigó.
+Kevin Dair Royo Cuesta
