@@ -1,75 +1,182 @@
 <main class="pantalla">
   @if (estado() === 'inicio') {
-    <section class="tarjeta entrada">
-      <h1>Chat en tiempo real</h1>
-      <p>Escribe tu nombre para entrar a la sala.</p>
-      <input
-        [(ngModel)]="username"
-        maxlength="20"
-        placeholder="Tu nombre"
-        (keyup.enter)="entrar()"
-      />
-      <button (click)="entrar()">Entrar al chat</button>
+    <section class="entrada">
+      <div class="entrada-info">
+        <h1>Chat en tiempo real</h1>
+        <p class="entrada-texto">
+          Escribe un nombre y entra a la sala. Abre este mismo enlace en otra pestaña y mira cómo los mensajes llegan sin recargar.
+        </p>
+
+        <div class="vista" aria-hidden="true">
+          <div class="mensaje">
+            <span class="avatar" style="background: #7c3fb5">A</span>
+            <div class="burbuja">
+              <span class="autor" style="color: #7c3fb5">Ana</span>
+              <p>¿Ya te llegó mi mensaje?</p>
+            </div>
+          </div>
+          <div class="mensaje propio">
+            <div class="burbuja">
+              <p>Al instante, sin recargar</p>
+            </div>
+          </div>
+          <div class="mensaje">
+            <span class="avatar" style="background: #0e7c86">B</span>
+            <div class="burbuja">
+              <span class="puntos"><span></span><span></span><span></span></span>
+            </div>
+          </div>
+        </div>
+
+        <p class="entrada-tecnologias">Hecho con Angular, Spring Boot, WebSocket y PostgreSQL.</p>
+      </div>
+
+      <div class="entrada-form">
+        <div class="entrada-tarjeta">
+          <h2>Entra a la sala</h2>
+          <p class="entrada-ayuda">Solo necesitas un nombre. No hay registro ni contraseña.</p>
+          <label for="nombre">Tu nombre</label>
+          <input
+            id="nombre"
+            [(ngModel)]="username"
+            maxlength="20"
+            placeholder="Por ejemplo, Ana"
+            autocomplete="nickname"
+            (keyup.enter)="entrar()"
+          />
+          <button class="primario" (click)="entrar()">Entrar al chat</button>
+        </div>
+
+        <p class="entrada-autor">
+          Hecho por Kevin Royo,
+          <a href="https://github.com/Keviin010" target="_blank" rel="noreferrer">GitHub</a>
+          y
+          <a href="https://www.linkedin.com/in/kevin-royo-09a427216/" target="_blank" rel="noreferrer">LinkedIn</a>
+        </p>
+      </div>
     </section>
   } @else {
-    <section class="tarjeta sala">
-      <header>
-        <div>
-          <h1>Chat en tiempo real</h1>
-          <span>Sesión de {{ username }}</span>
+    <section class="sala">
+      <aside class="lateral">
+        <p class="marca">
+          <span class="marca-icono">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path fill="#fff" d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+            </svg>
+          </span>
+          Chat en tiempo real
+        </p>
+
+        <div class="lateral-lista">
+          <h2 class="lateral-titulo">
+            Participantes recientes
+            <span class="contador">{{ participantes().length }}</span>
+          </h2>
+          <ul class="participantes">
+            @for (nombre of participantes(); track nombre) {
+              <li>
+                <span class="avatar" aria-hidden="true" [style.background]="colorDe(nombre)">{{ inicial(nombre) }}</span>
+                <span class="participante-nombre">{{ nombre }}</span>
+                @if (nombre === username) {
+                  <span class="tu">tú</span>
+                }
+              </li>
+            }
+          </ul>
         </div>
-        <button class="secundario" (click)="salir()">Salir</button>
-      </header>
 
-      @switch (estado()) {
-        @case ('conectando') {
-          <div class="aviso">Conectando. Si el servidor estaba dormido, puede tardar hasta un minuto.</div>
-        }
-        @case ('caido') {
-          <div class="aviso">Se perdió la conexión. Reconectando...</div>
-        }
-        @case ('error') {
-          <div class="aviso error">
-            No se pudo conectar con el servidor.
-            <button class="secundario" (click)="reintentar()">Reintentar</button>
+        <div class="lateral-pie">
+          <a href="https://github.com/Keviin010/frontend-chat" target="_blank" rel="noreferrer">Código del frontend</a>
+          <a href="https://github.com/Keviin010/backend-chat" target="_blank" rel="noreferrer">Código del backend</a>
+          <span>Hecho por Kevin Royo</span>
+        </div>
+      </aside>
+
+      <div class="principal">
+        <header>
+          <div>
+            <h1>Sala general</h1>
+            <p class="estado" [class.en-linea]="estado() === 'conectado'">
+              <span class="punto"></span>{{ textoEstado() }}
+            </p>
           </div>
-        }
-      }
-
-      <div class="mensajes" #lista>
-        @for (msg of messages(); track $index) {
-          @if (msg.type === 'CHAT') {
-            <div class="mensaje" [class.propio]="msg.sender === username">
-              @if (msg.sender !== username) {
-                <span class="autor" [style.color]="colorDe(msg.sender)">{{ msg.sender }}</span>
+          <div class="cabecera-derecha">
+            <div class="apilados" aria-hidden="true">
+              @for (nombre of participantes().slice(0, 4); track nombre) {
+                <span class="avatar" [style.background]="colorDe(nombre)">{{ inicial(nombre) }}</span>
               }
-              <p>{{ msg.content }}</p>
-              <time>{{ msg.timestamp | date: 'HH:mm' }}</time>
             </div>
-          } @else if (msg.type === 'JOIN') {
-            <div class="evento">{{ msg.sender }} se unió al chat</div>
-          } @else if (msg.type === 'LEAVE') {
-            <div class="evento">{{ msg.sender }} salió del chat</div>
+            <button class="secundario" (click)="salir()">Salir</button>
+          </div>
+        </header>
+
+        @switch (estado()) {
+          @case ('conectando') {
+            <div class="aviso">Conectando. Si el servidor estaba dormido, puede tardar hasta un minuto.</div>
+          }
+          @case ('caido') {
+            <div class="aviso">Se perdió la conexión. Reconectando...</div>
+          }
+          @case ('error') {
+            <div class="aviso error">
+              No se pudo conectar con el servidor.
+              <button class="secundario" (click)="reintentar()">Reintentar</button>
+            </div>
           }
         }
-      </div>
 
-      <div class="escribiendo">
-        @if (typingUser()) {
-          {{ typingUser() }} está escribiendo...
-        }
-      </div>
+        <div class="zona">
+          <div class="mensajes" #lista role="log" aria-label="Mensajes de la sala">
+            @for (msg of messages(); track $index; let i = $index) {
+              @if (msg.type === 'CHAT') {
+                <div
+                  class="mensaje"
+                  [class.propio]="msg.sender === username"
+                  [class.seguido]="!esPrimeroDelGrupo(i)"
+                >
+                  @if (msg.sender !== username) {
+                    <span class="avatar" aria-hidden="true" [style.background]="colorDe(msg.sender)">{{ inicial(msg.sender) }}</span>
+                  }
+                  <div class="burbuja">
+                    @if (msg.sender !== username && esPrimeroDelGrupo(i)) {
+                      <span class="autor" [style.color]="colorDe(msg.sender)">{{ msg.sender }}</span>
+                    }
+                    <p>{{ msg.content }}</p>
+                    <time>{{ msg.timestamp | date: 'HH:mm' }}</time>
+                  </div>
+                </div>
+              } @else if (msg.type === 'JOIN') {
+                <div class="evento">{{ msg.sender }} se unió al chat</div>
+              } @else if (msg.type === 'LEAVE') {
+                <div class="evento">{{ msg.sender }} salió del chat</div>
+              }
+            }
+          </div>
 
-      <div class="enviar">
-        <input
-          [(ngModel)]="texto"
-          maxlength="255"
-          placeholder="Escribe un mensaje..."
-          [disabled]="estado() !== 'conectado'"
-          (input)="avisarEscribiendo()"
-          (keyup.enter)="enviar()"
-        />
-        <button (click)="enviar()" [disabled]="estado() !== 'conectado'">Enviar</button>
+          <div class="escribiendo" role="status" [class.visible]="typingUser()">
+            @if (typingUser()) {
+              {{ typingUser() }} está escribiendo
+              <span class="puntos"><span></span><span></span><span></span></span>
+            }
+          </div>
+        </div>
+
+        <div class="enviar">
+          <input
+            [(ngModel)]="texto"
+            maxlength="255"
+            placeholder="Escribe un mensaje..."
+            aria-label="Mensaje"
+            [disabled]="estado() !== 'conectado'"
+            (input)="avisarEscribiendo()"
+            (keyup.enter)="enviar()"
+          />
+          <button (click)="enviar()" [disabled]="estado() !== 'conectado'" aria-label="Enviar mensaje">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+              <path fill="currentColor" d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   }

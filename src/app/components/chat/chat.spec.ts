@@ -134,6 +134,54 @@ describe('ChatComponent', () => {
     expect(component.colorDe('Ana')).toBe(component.colorDe('Ana'));
   });
 
+  it('gives the initial of the name in uppercase', () => {
+    expect(component.inicial(' ana')).toBe('A');
+  });
+
+  it('lists the own user first and then the people who wrote or joined', () => {
+    entrarComo('Kevin');
+    const { alConectar, alRecibir } = avisosDelServicio();
+    alConectar();
+    alRecibir({ sender: 'Ana', content: '', type: 'JOIN' });
+    alRecibir({ sender: 'Beto', content: 'Hola', type: 'CHAT' });
+    alRecibir({ sender: 'Kevin', content: 'Buenas', type: 'CHAT' });
+
+    expect(component.participantes()).toEqual(['Kevin', 'Ana', 'Beto']);
+  });
+
+  it('removes from the list the people who left', () => {
+    entrarComo('Kevin');
+    const { alConectar, alRecibir } = avisosDelServicio();
+    alConectar();
+    alRecibir({ sender: 'Ana', content: 'Hola', type: 'CHAT' });
+    alRecibir({ sender: 'Ana', content: '', type: 'LEAVE' });
+
+    expect(component.participantes()).toEqual(['Kevin']);
+  });
+
+  it('shows the name only on the first message of a group', async () => {
+    entrarComo('Kevin');
+    const { alConectar, alRecibir } = avisosDelServicio();
+    alConectar();
+    alRecibir({ id: 1, sender: 'Ana', content: 'Uno', type: 'CHAT' });
+    alRecibir({ id: 2, sender: 'Ana', content: 'Dos', type: 'CHAT' });
+    alRecibir({ id: 3, sender: 'Beto', content: 'Tres', type: 'CHAT' });
+    await fixture.whenStable();
+
+    expect(component.esPrimeroDelGrupo(0)).toBe(true);
+    expect(component.esPrimeroDelGrupo(1)).toBe(false);
+    expect(component.esPrimeroDelGrupo(2)).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('.mensajes .autor').length).toBe(2);
+  });
+
+  it('says the connection state in words', () => {
+    expect(component.textoEstado()).toBe('Sin conexión');
+    entrarComo('Kevin');
+    expect(component.textoEstado()).toBe('Conectando…');
+    avisosDelServicio().alConectar();
+    expect(component.textoEstado()).toBe('En línea');
+  });
+
   it('goes back to the start when leaving', () => {
     entrarComo('Kevin');
     component.salir();

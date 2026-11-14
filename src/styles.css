@@ -1,6 +1,52 @@
+@import '@fontsource-variable/bricolage-grotesque/index.css';
+
+:root {
+  --marino: #131c4d;
+  --cobalto: #3552f2;
+  --cobalto-oscuro: #2a41c7;
+  --papel: #f1f3fb;
+  --pagina: #e3e8f6;
+  --linea: #dce1f0;
+  --linea-campo: #8089b0;
+  --tinta: #131a3a;
+  --apagado: #5b6385;
+  --senal: #22c55e;
+  --alerta: #f5a524;
+  --fuente: 'Bricolage Grotesque Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: #dfe8ee;
-  color: #1c2b36;
+  background: var(--pagina);
+  color: var(--tinta);
+  font-family: var(--fuente);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--cobalto);
+  outline-offset: 2px;
 }

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, afterRenderEffect, inject, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, afterRenderEffect, computed, inject, signal, viewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatService } from '../../services/chat.service';
@@ -23,9 +23,37 @@ export class ChatComponent implements OnDestroy {
   messages = signal<ChatMessage[]>([]);
   typingUser = signal('');
 
+  participantes = computed(() => {
+    const presentes = new Map<string, boolean>();
+    for (const msg of this.messages()) {
+      if (msg.type === 'LEAVE') {
+        presentes.set(msg.sender, false);
+      } else if (msg.type === 'CHAT' || msg.type === 'JOIN') {
+        presentes.set(msg.sender, true);
+      }
+    }
+    const otros = [...presentes]
+      .filter(([nombre, activo]) => activo && nombre !== this.username)
+      .map(([nombre]) => nombre);
+    return [this.username, ...otros];
+  });
+
+  textoEstado = computed(() => {
+    switch (this.estado()) {
+      case 'conectado':
+        return 'En línea';
+      case 'conectando':
+        return 'Conectando…';
+      case 'caido':
+        return 'Reconectando…';
+      default:
+        return 'Sin conexión';
+    }
+  });
+
   lista = viewChild<ElementRef<HTMLDivElement>>('lista');
 
-  private colores = ['#e74c3c', '#2980b9', '#27ae60', '#d35400', '#8e44ad', '#16a085', '#c0392b', '#e91e63'];
+  private colores = ['#d13b40', '#b8590a', '#1a7a4f', '#0b6fd6', '#7c3fb5', '#c2287a', '#0e7c86', '#4f6b00'];
   private intentos = 0;
   private saliendo = false;
   private ultimoAviso = 0;
@@ -87,11 +115,21 @@ export class ChatComponent implements OnDestroy {
   }
 
   colorDe(nombre: string): string {
-    let suma = 0;
+    let numero = 0;
     for (const letra of nombre) {
-      suma += letra.charCodeAt(0);
+      numero = (numero * 131 + letra.charCodeAt(0)) % 1000003;
     }
-    return this.colores[suma % this.colores.length];
+    return this.colores[numero % this.colores.length];
+  }
+
+  inicial(nombre: string): string {
+    return nombre.trim().charAt(0).toUpperCase();
+  }
+
+  esPrimeroDelGrupo(indice: number): boolean {
+    const lista = this.messages();
+    const anterior = lista[indice - 1];
+    return !anterior || anterior.type !== 'CHAT' || anterior.sender !== lista[indice].sender;
   }
 
   private conectar(): void {
