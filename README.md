@@ -63,4 +63,4 @@ La dirección del servidor está en `src/app/config.ts`. En `localhost` usa `htt
 
 ## Autor
 
-Kevin Dair Royo Cuesta, estudiante de Tecnología en Desarrollo de Software, Universidad Católica Luis Amigó.
+Kevin Dair Royo Cuesta
