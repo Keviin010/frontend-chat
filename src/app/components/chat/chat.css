@@ -27,11 +27,6 @@
   font-size: 1.1rem;
 }
 
-.entrada-tecnologias {
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 0.92rem;
-}
-
 .vista {
   display: none;
   flex-direction: column;
@@ -90,18 +85,6 @@
 .enviar input:focus-visible {
   outline: 3px solid rgba(53, 82, 242, 0.3);
   outline-offset: 0;
-}
-
-.entrada-autor {
-  width: min(100%, 24rem);
-  margin-inline: auto;
-  color: var(--apagado);
-  font-size: 0.92rem;
-}
-
-.entrada-autor a {
-  color: var(--cobalto-oscuro);
-  font-weight: 600;
 }
 
 @media (min-width: 38rem) {
@@ -262,24 +245,6 @@
 .tu {
   color: rgba(255, 255, 255, 0.65);
   font-size: 0.78rem;
-}
-
-.lateral-pie {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  margin-top: auto;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 0.88rem;
-}
-
-.lateral-pie a {
-  color: rgba(255, 255, 255, 0.85);
-  text-underline-offset: 3px;
-}
-
-.lateral-pie a:hover {
-  color: #fff;
 }
 
 .lateral :focus-visible {
